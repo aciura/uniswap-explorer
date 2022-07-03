@@ -1,0 +1,16 @@
+{
+  "name": "uniswap-explorer-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "aciura",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@uniswap/sdk": "^3.0.3",
+    "@uniswap/sdk-core": "^3.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "@uniswap/v2-sdk": "^3.0.1",
+    "dotenv": "^16.0.1",
+    "ethers": "^5.6.9"
+  }
+}
