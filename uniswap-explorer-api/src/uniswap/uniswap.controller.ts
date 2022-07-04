@@ -10,10 +10,14 @@ export class UniswapController {
     @Param('blockNumber') blockNumber: number,
     @Param('limit') limit: number,
   ) {
+    console.time('getTransactions')
     const transactions = await this.uniswapService.getTransactions(
-      blockNumber,
-      limit,
+      Number(blockNumber),
+      Number(limit),
     )
+    console.timeEnd('getTransactions')
+    console.log(`Limit: ${limit}.`)
+    // console.log('Controller', transactions)
     return transactions
   }
 }

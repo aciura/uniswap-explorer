@@ -29,7 +29,7 @@ export interface IUniswapTransaction {
   chainId: number
 
   function_name: string
-  Inputs: IFunctionInput[]
+  inputs: IFunctionInput[]
   path: IToken[]
 
   status: string

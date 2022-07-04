@@ -34,11 +34,11 @@ export class UniswapService implements OnModuleInit {
   async getTransactions(
     blockNumber: number,
     limit: number,
-  ): Promise<IUniswapTransaction[]> {
-    const transactions = Array.from(
-      { length: limit },
-      (_, index) => blockNumber - index,
-    ).reduce(async (acc, block) => {
+  ): Promise<Map<number, IUniswapTransaction[]>> {
+    const transactions = new Map<number, IUniswapTransaction[]>()
+    const waitForAllBlocks = []
+
+    for (let block = blockNumber; block > blockNumber - limit; block--) {
       const blockWithTransactions =
         await this.provider.getBlockWithTransactions(block)
 
@@ -48,14 +48,25 @@ export class UniswapService implements OnModuleInit {
         blockWithTransactions.transactions.filter(
           transResponse => transResponse.to === uniswapV2Router02Address,
         )
+
+      console.log('Transactions ', routerIncomingTransactions.length)
+
       const transactionInfo = routerIncomingTransactions.map(tx =>
         this.handleTransaction(tx),
       )
 
-      const txs = await Promise.allSettled(transactionInfo)
-      return [...(await acc), ...txs]
-    }, Promise.resolve([]))
+      waitForAllBlocks.push(
+        Promise.allSettled(transactionInfo).then(settledTxs => {
+          const txs = settledTxs
+            .filter(tx => tx.status === 'fulfilled')
+            .map(tx => <PromiseFulfilledResult<IUniswapTransaction>>tx)
+            .map(tx => tx.value)
+          transactions.set(block, txs)
+        }),
+      )
+    }
 
+    await Promise.allSettled(waitForAllBlocks)
     return transactions
   }
 
@@ -71,23 +82,25 @@ export class UniswapService implements OnModuleInit {
       uniswapV2Router02Interface.functions[txDescription.signature].inputs
 
     const path = txDescription.args.path
-    const tokens = path && path.length ? this.getTokens(path) : []
+    const tokens =
+      path && path.length ? this.getTokens(path) : Promise.resolve([])
 
     const result: IUniswapTransaction = {
-      ...tx,
-      ...txDescription,
-      function_name: txDescription.name,
+      hash: tx.hash,
+      chainId: tx.chainId,
       from: tx.from,
       to: tx.to,
       eth_value: tx.value,
-      Inputs: inputs.map(input => ({
-        ...input,
+      function_name: txDescription.name,
+      inputs: inputs.map(input => ({
+        name: input.name,
+        type: input.type,
+        baseType: input.baseType,
         value: txDescription.args[input.name].toString(),
       })),
       path: await tokens,
       status: await this.getStatus(tx),
     }
-
     return result
   }
 
@@ -95,7 +108,7 @@ export class UniswapService implements OnModuleInit {
     try {
       const txReceipt = await tx.wait()
       console.log('TX Status', txReceipt.status)
-      return txReceipt.status ? 'failed' : 'success'
+      return txReceipt.status == 1 ? 'success' : 'failed'
       // txReceipt.logs.forEach(log => {
       //   const parsedLog = uniswapV2Router02Interface.parseLog(log)
       //   console.log('parsedLog', parsedLog)
@@ -103,7 +116,7 @@ export class UniswapService implements OnModuleInit {
     } catch (error) {
       console.error('TransactionReceipt :( ', error)
     }
-    return 'unknown'
+    return 'failed'
   }
 
   async getTokens(path: string[]): Promise<IToken[]> {
@@ -120,9 +133,9 @@ export class UniswapService implements OnModuleInit {
       abi_erc20,
       this.provider,
     )
-    const name = await tokenContract.name()
-    const symbol = await tokenContract.symbol()
-    const decimals = await tokenContract.decimals()
+    const name = tokenContract.name()
+    const symbol = tokenContract.symbol()
+    const decimals = tokenContract.decimals()
 
     return { name, symbol, decimals, address: tokenAddress }
   }
