@@ -26,33 +26,41 @@ export class UniswapService implements OnModuleInit {
     )
   }
 
-  async getTransactions(blockNumber: number, limit: number) {
+  async getTransactions(highestBlockNumber: number, limit: number) {
     const transactions = new Map<string, Promise<IUniswapTransaction>>()
 
-    for (let block = blockNumber; block > blockNumber - limit; block--) {
-      const blockWithTransactions =
-        await this.provider.getBlockWithTransactions(block)
+    for (
+      let blockNumber = highestBlockNumber;
+      blockNumber > highestBlockNumber - limit;
+      blockNumber--
+    ) {
+      try {
+        const blockWithTransactions =
+          await this.provider.getBlockWithTransactions(blockNumber)
 
-      console.log('>> block number', blockWithTransactions.number)
+        this.logger.debug(`block number ${blockWithTransactions.number}`)
 
-      const incomingTransactions = blockWithTransactions.transactions.filter(
-        txResponse => txResponse.to === uniswapV2Router02Address,
-      )
+        const incomingTransactions = blockWithTransactions.transactions.filter(
+          txResponse => txResponse.to === uniswapV2Router02Address,
+        )
 
-      console.log('Transactions ', incomingTransactions.length)
+        this.logger.debug(`Transactions Count ${incomingTransactions.length}`)
 
-      incomingTransactions.forEach(tx => {
-        transactions.set(tx.hash, this.getTransactionInfo(tx))
-      })
+        incomingTransactions.forEach(tx => {
+          transactions.set(tx.hash, this.getTransactionInfo(tx))
+        })
+      } catch (error) {
+        this.logger.error(error, blockNumber)
+      }
     }
-    const result0 = Array.from(transactions, ([_, promiseTx]) => promiseTx)
-    console.log('PromiseTx', result0)
-    const result = Promise.allSettled(result0).then(
-      txs =>
-        txs
-          .filter(promise => promise.status === 'fulfilled')
-          .map(tx => <PromiseFulfilledResult<IUniswapTransaction>>tx)
-          .map(tx => tx.value as IUniswapTransaction),
+
+    const promises = Array.from(transactions, ([_, promiseTx]) => promiseTx)
+
+    const result = Promise.allSettled(promises).then(
+      settled =>
+        settled
+          .filter(settled => settled.status === 'fulfilled')
+          .map(tx => (tx as PromiseFulfilledResult<IUniswapTransaction>).value),
       // rejected promises are lost here
     )
     return result
@@ -61,7 +69,7 @@ export class UniswapService implements OnModuleInit {
   async getTransactionInfo(
     tx: ethers.providers.TransactionResponse,
   ): Promise<IUniswapTransaction> {
-    console.log('\n\r$$$ transaction', tx.hash)
+    this.logger.debug('$$$ transaction', tx.hash)
 
     const txDescription = uniswapV2Router02Interface.parseTransaction({
       data: tx.data,

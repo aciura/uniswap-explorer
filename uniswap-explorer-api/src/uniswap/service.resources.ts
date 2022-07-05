@@ -1,5 +1,8 @@
+import { Logger } from '@nestjs/common'
 import { ethers } from 'ethers'
 import { IToken } from './dtos/IUniswapTransaction'
+
+const logger = new Logger('uniswap.service.resources')
 
 export const abi_erc20 = [
   'function name() view returns (string)',
@@ -42,7 +45,7 @@ export async function getStatus(
     //   console.log('parsedLog', parsedLog)
     // })
   } catch (error) {
-    console.error('TransactionReceipt :( ', error?.reason)
+    logger.error(`TransactionStatus ${error?.reason}, tx:${tx.hash}`)
     return 'failed'
   }
 }
