@@ -54,16 +54,7 @@ export class UniswapService implements OnModuleInit {
       }
     }
 
-    const promises = Array.from(transactions, ([_, promiseTx]) => promiseTx)
-
-    const result = Promise.allSettled(promises).then(
-      settled =>
-        settled
-          .filter(settled => settled.status === 'fulfilled')
-          .map(tx => (tx as PromiseFulfilledResult<IUniswapTransaction>).value),
-      // rejected promises are lost here
-    )
-    return result
+    return this.unwrapTrxPromises(transactions)
   }
 
   async getTransactionInfo(
@@ -101,6 +92,24 @@ export class UniswapService implements OnModuleInit {
       path: await tokens,
       status: await getStatus(tx),
     }
+    return result
+  }
+
+  private unwrapTrxPromises(
+    transactions: Map<string, Promise<IUniswapTransaction>>,
+  ) {
+    const promises = Array.from(transactions, ([_, promiseTx]) => promiseTx)
+
+    const result = Promise.allSettled(promises).then(settled => {
+      settled
+        .filter(settled => settled.status !== 'fulfilled')
+        .forEach(tx => {
+          this.logger.error((tx as PromiseRejectedResult).reason)
+        })
+      return settled
+        .filter(settled => settled.status === 'fulfilled')
+        .map(tx => (tx as PromiseFulfilledResult<IUniswapTransaction>).value)
+    })
     return result
   }
 }

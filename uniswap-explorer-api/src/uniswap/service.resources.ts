@@ -45,7 +45,7 @@ export async function getStatus(
     //   console.log('parsedLog', parsedLog)
     // })
   } catch (error) {
-    logger.error(`TransactionStatus ${error?.reason}, tx:${tx.hash}`)
+    logger.warn(`TransactionStatus ${error?.reason}, tx:${tx.hash}`)
     return 'failed'
   }
 }
