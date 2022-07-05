@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { IToken, IUniswapTransaction } from './dtos/IUniswapTransaction'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from 'nestjs-dotenv'
+import { getStatus, getTokens } from './service.resources'
 
 const abi_IUniswapV2Router02 = require('@uniswap/v2-periphery/build/IUniswapV2Router02.json')
 
@@ -10,12 +11,6 @@ const uniswapV2Router02Address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 const uniswapV2Router02Interface = new ethers.utils.Interface(
   abi_IUniswapV2Router02.abi,
 )
-
-const abi_erc20 = [
-  'function name() view returns (string)',
-  'function symbol() view returns (string)',
-  'function decimals() view returns (uint8)',
-]
 
 @Injectable()
 export class UniswapService implements OnModuleInit {
@@ -31,12 +26,8 @@ export class UniswapService implements OnModuleInit {
     )
   }
 
-  async getTransactions(
-    blockNumber: number,
-    limit: number,
-  ): Promise<Map<number, IUniswapTransaction[]>> {
-    const transactions = new Map<number, IUniswapTransaction[]>()
-    const waitForAllBlocks = []
+  async getTransactions(blockNumber: number, limit: number) {
+    const transactions = new Map<string, Promise<IUniswapTransaction>>()
 
     for (let block = blockNumber; block > blockNumber - limit; block--) {
       const blockWithTransactions =
@@ -44,33 +35,32 @@ export class UniswapService implements OnModuleInit {
 
       console.log('>> block number', blockWithTransactions.number)
 
-      const routerIncomingTransactions =
-        blockWithTransactions.transactions.filter(
-          transResponse => transResponse.to === uniswapV2Router02Address,
-        )
-
-      console.log('Transactions ', routerIncomingTransactions.length)
-
-      const transactionInfo = routerIncomingTransactions.map(tx =>
-        this.handleTransaction(tx),
+      const incomingTransactions = blockWithTransactions.transactions.filter(
+        txResponse => txResponse.to === uniswapV2Router02Address,
       )
 
-      waitForAllBlocks.push(
-        Promise.allSettled(transactionInfo).then(settledTxs => {
-          const txs = settledTxs
-            .filter(tx => tx.status === 'fulfilled')
-            .map(tx => <PromiseFulfilledResult<IUniswapTransaction>>tx)
-            .map(tx => tx.value)
-          transactions.set(block, txs)
-        }),
-      )
+      console.log('Transactions ', incomingTransactions.length)
+
+      incomingTransactions.forEach(tx => {
+        transactions.set(tx.hash, this.getTransactionInfo(tx))
+      })
     }
-
-    await Promise.allSettled(waitForAllBlocks)
-    return transactions
+    const result0 = Array.from(transactions, ([_, promiseTx]) => promiseTx)
+    console.log('PromiseTx', result0)
+    const result = Promise.allSettled(result0).then(
+      txs =>
+        txs
+          .filter(promise => promise.status === 'fulfilled')
+          .map(tx => <PromiseFulfilledResult<IUniswapTransaction>>tx)
+          .map(tx => tx.value as IUniswapTransaction),
+      // rejected promises are lost here
+    )
+    return result
   }
 
-  async handleTransaction(tx: ethers.providers.TransactionResponse) {
+  async getTransactionInfo(
+    tx: ethers.providers.TransactionResponse,
+  ): Promise<IUniswapTransaction> {
     console.log('\n\r$$$ transaction', tx.hash)
 
     const txDescription = uniswapV2Router02Interface.parseTransaction({
@@ -83,7 +73,9 @@ export class UniswapService implements OnModuleInit {
 
     const path = txDescription.args.path
     const tokens =
-      path && path.length ? this.getTokens(path) : Promise.resolve([])
+      path && path.length
+        ? getTokens(path, this.provider)
+        : Promise.resolve([] as IToken[])
 
     const result: IUniswapTransaction = {
       hash: tx.hash,
@@ -96,47 +88,11 @@ export class UniswapService implements OnModuleInit {
         name: input.name,
         type: input.type,
         baseType: input.baseType,
-        value: txDescription.args[input.name].toString(),
+        value: txDescription.args[input.name],
       })),
       path: await tokens,
-      status: await this.getStatus(tx),
+      status: await getStatus(tx),
     }
     return result
-  }
-
-  private async getStatus(tx: ethers.providers.TransactionResponse) {
-    try {
-      const txReceipt = await tx.wait()
-      console.log('TX Status', txReceipt.status)
-      return txReceipt.status == 1 ? 'success' : 'failed'
-      // txReceipt.logs.forEach(log => {
-      //   const parsedLog = uniswapV2Router02Interface.parseLog(log)
-      //   console.log('parsedLog', parsedLog)
-      // })
-    } catch (error) {
-      console.error('TransactionReceipt :( ', error)
-    }
-    return 'failed'
-  }
-
-  async getTokens(path: string[]): Promise<IToken[]> {
-    const tokensPromise = path.map(tokenAddress =>
-      this.getTokenFromAddress(tokenAddress),
-    )
-    const tokens = await Promise.all(tokensPromise)
-    return tokens
-  }
-
-  async getTokenFromAddress(tokenAddress: string): Promise<IToken> {
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      abi_erc20,
-      this.provider,
-    )
-    const name = tokenContract.name()
-    const symbol = tokenContract.symbol()
-    const decimals = tokenContract.decimals()
-
-    return { name, symbol, decimals, address: tokenAddress }
   }
 }
