@@ -78,6 +78,8 @@ export class UniswapService implements OnModuleInit {
 
     const result: IUniswapTransaction = {
       hash: tx.hash,
+      blockNumber: tx.blockNumber,
+      timestamp: tx.timestamp,
       chainId: tx.chainId,
       from: tx.from,
       to: tx.to,
@@ -90,9 +92,9 @@ export class UniswapService implements OnModuleInit {
         value: txDescription.args[input.name],
       })),
       path: await tokens,
-      status: await getStatus(tx),
+      status: 'unknown',
     }
-    return result
+    return await getStatus(tx, result)
   }
 
   private unwrapTrxPromises(

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { ethers } from 'ethers'
-import { IToken } from './dtos/IUniswapTransaction'
+import { IToken, IUniswapTransaction } from './dtos/IUniswapTransaction'
 
 const logger = new Logger('uniswap.service.resources')
 
@@ -35,17 +35,21 @@ export async function getTokenFromAddress(
 
 export async function getStatus(
   tx: ethers.providers.TransactionResponse,
-): Promise<'success' | 'failed'> {
+  dto: IUniswapTransaction,
+): Promise<IUniswapTransaction> {
   try {
     const txReceipt = await tx.wait()
-    return txReceipt.status == 1 ? 'success' : 'failed'
-
+    dto.blockNumber = txReceipt.blockNumber
+    dto.timestamp = txReceipt.transactionIndex
+    dto.status = txReceipt.status == 1 ? 'success' : 'failed'
+    return dto
     // txReceipt.logs.forEach(log => {
     //   const parsedLog = uniswapV2Router02Interface.parseLog(log)
     //   console.log('parsedLog', parsedLog)
     // })
   } catch (error) {
     logger.warn(`TransactionStatus ${error?.reason}, tx:${tx.hash}`)
-    return 'failed'
+    dto.status = 'failed'
+    return dto
   }
 }

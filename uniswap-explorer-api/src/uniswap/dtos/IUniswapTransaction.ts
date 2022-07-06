@@ -17,9 +17,8 @@ export interface IToken {
 export interface IUniswapTransaction {
   hash: string
 
-  blockNumber?: number
-  blockHash?: string
-  timestamp?: number
+  blockNumber: number
+  timestamp: number
 
   to: string
   from: string
