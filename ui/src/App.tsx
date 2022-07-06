@@ -1,7 +1,6 @@
 import {
   ChakraProvider,
   Box,
-  Text,
   Link,
   VStack,
   Code,
@@ -9,7 +8,8 @@ import {
   theme,
   Heading,
 } from '@chakra-ui/react'
-import { ColorModeSwitcher } from './ColorModeSwitcher'
+import { ColorModeSwitcher } from './components/ColorModeSwitcher'
+import { Transactions } from './components/Transactions'
 
 export const App = () => (
   <ChakraProvider theme={theme}>
@@ -19,7 +19,7 @@ export const App = () => (
         <VStack spacing={'12'}>
           <Heading size={'lg'}>Uniswap Explorer</Heading>
           <Heading size={'md'}>Log in using Metamask</Heading>
-          <span>Login Form</span>
+          <Transactions />
         </VStack>
       </Grid>
     </Box>
