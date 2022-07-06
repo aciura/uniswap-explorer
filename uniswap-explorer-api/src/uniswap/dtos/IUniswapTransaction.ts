@@ -18,13 +18,13 @@ export interface IUniswapTransaction {
   hash: string
 
   blockNumber: number
-  timestamp: number
+  transactionIndex?: number
 
   to: string
   from: string
 
   // data: string
-  eth_value: BigNumber
+  eth_value: string
   chainId: number
 
   function_name: string

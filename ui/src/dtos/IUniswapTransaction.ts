@@ -18,7 +18,7 @@ export interface IUniswapTransaction {
   hash: string
 
   blockNumber: number
-  timestamp: number
+  transactionIndex: number
 
   to: string
   from: string

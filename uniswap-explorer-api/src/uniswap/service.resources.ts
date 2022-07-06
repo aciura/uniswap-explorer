@@ -40,7 +40,7 @@ export async function getStatus(
   try {
     const txReceipt = await tx.wait()
     dto.blockNumber = txReceipt.blockNumber
-    dto.timestamp = txReceipt.transactionIndex
+    dto.transactionIndex = txReceipt.transactionIndex
     dto.status = txReceipt.status == 1 ? 'success' : 'failed'
     return dto
     // txReceipt.logs.forEach(log => {

@@ -1,6 +1,5 @@
 import useSWR from 'swr'
 import {
-  Link,
   Text,
   Table,
   TableContainer,
@@ -15,6 +14,12 @@ import {
 
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { IUniswapTransaction } from '../dtos/IUniswapTransaction'
+import { Fragment } from 'react'
+import { BigNumber } from 'ethers'
+import { ethers } from 'ethers'
+import { TxHash } from './TxHash'
+import { TxInputs } from './TxInputs'
+import { TxStatus } from './TxStatus'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -29,36 +34,37 @@ export const Transactions = () => {
   console.log({ transactions, error })
   return (
     <TableContainer>
-      <Table variant="striped" colorScheme="red">
+      <Table variant="striped" colorScheme="red" rounded={'xl'}>
         <TableCaption>List of Uniswap Transactions</TableCaption>
         <Thead>
           <Tr>
             <Th>Hash</Th>
             <Th>BlockNumber</Th>
-            <Th isNumeric>Time</Th>
+            {/* <Th isNumeric>Time</Th> */}
             <Th>From</Th>
-            <Th>To</Th>
-            <Th>Function</Th>
-            <Th>Inputs</Th>
-            <Th>Path</Th>
             <Th>Status</Th>
+            <Th>Function</Th>
+            <Th>Path</Th>
+            <Th>Inputs</Th>
           </Tr>
         </Thead>
         <Tbody>
           {transactions &&
             transactions?.map(tx => (
               <Tr key={tx.hash}>
-                <Td>
-                  <Link href={`https://etherscan.io/tx/${tx.hash}`} isExternal>
-                    {tx.hash} <ExternalLinkIcon mx="2px" />
-                  </Link>
+                <Td isNumeric>
+                  <TxHash hash={tx.hash} />
                 </Td>
-                <Td isNumeric>{tx.blockNumber}</Td>
-                <Td isNumeric>{tx.timestamp}</Td>
-                <Td>{tx.from}</Td>
-                <Td>{tx.to}</Td>
+                <Td fontSize={'sm'} isNumeric>
+                  {tx.blockNumber}
+                </Td>
+                <Td isNumeric fontSize={'0.8rem'}>
+                  {tx.from}
+                </Td>
+                <Td>
+                  <TxStatus status={tx.status} />
+                </Td>
                 <Td>{tx.function_name}</Td>
-                <Td>Inputs</Td>
                 <Td>
                   {tx.path.map(token => (
                     <Text key={token.address} mx={'0.1rem'}>
@@ -66,7 +72,9 @@ export const Transactions = () => {
                     </Text>
                   ))}
                 </Td>
-                <Td>{tx.status}</Td>
+                <Td>
+                  <TxInputs list={tx.inputs} />
+                </Td>
               </Tr>
             ))}
         </Tbody>
