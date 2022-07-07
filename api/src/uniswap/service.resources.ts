@@ -1,6 +1,8 @@
 import { Logger } from '@nestjs/common'
 import { ethers } from 'ethers'
-import { IToken, IUniswapTransaction } from './dtos/IUniswapTransaction'
+import { IUniswapTransaction } from './dtos/IUniswapTransaction'
+import { IToken } from './dtos/IToken'
+import { ITxReceipt } from './dtos/ITxReceipt'
 
 const logger = new Logger('uniswap.service.resources')
 
@@ -33,23 +35,27 @@ export async function getTokenFromAddress(
   return { name, symbol, decimals, address: tokenAddress }
 }
 
-export async function getStatus(
+export async function getTxReceipt(
   tx: ethers.providers.TransactionResponse,
-  dto: IUniswapTransaction,
-): Promise<IUniswapTransaction> {
+  uniswapV2Router02Interface: ethers.utils.Interface,
+): Promise<ITxReceipt> {
   try {
     const txReceipt = await tx.wait()
-    dto.blockNumber = txReceipt.blockNumber
-    dto.transactionIndex = txReceipt.transactionIndex
-    dto.status = txReceipt.status == 1 ? 'success' : 'failed'
-    return dto
+    const receiptData = {
+      blockNumber: txReceipt.blockNumber,
+      transactionIndex: txReceipt.transactionIndex,
+      status: txReceipt.status == 1 ? 'success' : 'failed',
+    }
+    // TODO: uniswapV2Router02Interface abi is missing events
     // txReceipt.logs.forEach(log => {
+    //   logger.debug('getTxReceipt', log)
     //   const parsedLog = uniswapV2Router02Interface.parseLog(log)
-    //   console.log('parsedLog', parsedLog)
+    //   logger.debug('parsedLog', parsedLog)
     // })
+    return receiptData
   } catch (error) {
     logger.warn(`TransactionStatus ${error?.reason}, tx:${tx.hash}`)
-    dto.status = 'failed'
-    return dto
+
+    return { status: 'failed' }
   }
 }

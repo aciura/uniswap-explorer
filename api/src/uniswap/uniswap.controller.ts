@@ -1,22 +1,31 @@
-import { Controller, Get, Logger, Param } from '@nestjs/common'
+import {
+  CacheInterceptor,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common'
 import { UniswapService } from './uniswap.service'
 
 @Controller('uniswap')
+@UseInterceptors(CacheInterceptor)
 export class UniswapController {
   private readonly logger = new Logger(UniswapService.name)
 
   constructor(private readonly uniswapService: UniswapService) {}
 
-  @Get('block/:blockNumber/limit/:limit')
+  @Get('block/:blockNumber')
   async getUniswapTransactions(
     @Param('blockNumber') latestBlockNumber: number,
-    @Param('limit') blockLimit: number,
+    @Query('limit') blockLimit?: number,
   ) {
     const startTime = Date.now()
 
     const transactions = await this.uniswapService.getTransactions(
       Number(latestBlockNumber),
-      Number(blockLimit),
+      Number(blockLimit ?? 1),
     )
 
     const endTime = Date.now()

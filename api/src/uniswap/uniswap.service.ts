@@ -1,8 +1,16 @@
 import { ethers } from 'ethers'
-import { IToken, IUniswapTransaction } from './dtos/IUniswapTransaction'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { IUniswapTransaction } from './dtos/IUniswapTransaction'
+import { IToken } from './dtos/IToken'
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common'
 import { ConfigService } from 'nestjs-dotenv'
-import { getStatus, getTokens } from './service.resources'
+import { getTxReceipt, getTokens } from './service.resources'
+import { Cache } from 'cache-manager'
 
 const abi_IUniswapV2Router02 = require('@uniswap/v2-periphery/build/IUniswapV2Router02.json')
 
@@ -17,7 +25,10 @@ export class UniswapService implements OnModuleInit {
   private readonly logger = new Logger(UniswapService.name)
   private provider: ethers.providers.InfuraProvider
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   async onModuleInit() {
     this.provider = new ethers.providers.InfuraProvider(
@@ -70,12 +81,6 @@ export class UniswapService implements OnModuleInit {
     const inputs =
       uniswapV2Router02Interface.functions[txDescription.signature].inputs
 
-    const path = txDescription.args.path
-    const tokens =
-      path && path.length
-        ? getTokens(path, this.provider)
-        : Promise.resolve([] as IToken[])
-
     const result: IUniswapTransaction = {
       hash: tx.hash,
       blockNumber: tx.blockNumber,
@@ -90,10 +95,18 @@ export class UniswapService implements OnModuleInit {
         baseType: input.baseType,
         value: txDescription.args[input.name].toString(),
       })),
-      path: await tokens,
+      path: [],
       status: 'unknown',
     }
-    return await getStatus(tx, result)
+
+    const path = txDescription.args.path
+    const tokens =
+      path && path.length
+        ? getTokens(path, this.provider)
+        : Promise.resolve([] as IToken[])
+
+    const txReceipt = await getTxReceipt(tx, uniswapV2Router02Interface)
+    return { ...result, path: await tokens, ...txReceipt }
   }
 
   private unwrapTrxPromises(

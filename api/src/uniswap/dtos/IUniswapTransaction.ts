@@ -1,18 +1,6 @@
 import { BigNumber } from 'ethers'
-
-export interface IFunctionInput {
-  name: string
-  value: string
-  type: string
-  baseType: string
-}
-
-export interface IToken {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
-}
+import { IFunctionInput } from './IFunctionInput'
+import { IToken } from './IToken'
 
 export interface IUniswapTransaction {
   hash: string
