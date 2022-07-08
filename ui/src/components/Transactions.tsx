@@ -106,7 +106,7 @@ export const Transactions = () => {
         />
       )}
       <TableContainer>
-        <Table variant="striped" colorScheme="red" rounded={'xl'}>
+        <Table variant="striped" colorScheme="blue" rounded={16}>
           <TableCaption>List of Uniswap Transactions</TableCaption>
           <Thead>
             <Tr>
@@ -122,7 +122,7 @@ export const Transactions = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {/* {!transactions && (
+            {!transactions && (
               <>
                 <Tr>
                   <Td>
@@ -136,7 +136,7 @@ export const Transactions = () => {
                   </Td>
                 </Tr>
               </>
-            )} */}
+            )}
             {transactions &&
               transactions?.map((tx: IUniswapTransaction) => (
                 <Tr key={tx.hash}>
