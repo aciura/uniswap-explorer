@@ -1,4 +1,4 @@
-import { HStack, Link, Text, VStack } from '@chakra-ui/react'
+import { HStack, Link, Text, Tooltip, VStack } from '@chakra-ui/react'
 import { ethers } from 'ethers'
 import { IToken, IUniswapTransaction } from '../../dtos/IUniswapTransaction'
 import { displayFloat } from '../utils'
@@ -36,12 +36,16 @@ export function TxPath({ transaction }: { transaction: IUniswapTransaction }) {
         }
         return (
           <Text key={token.address}>
-            {amount === UNKNOWN_AMOUNT
-              ? displayFloat(amount, DECIMALS_TO_DISPLAY)
-              : displayFloat(
+            {amount === UNKNOWN_AMOUNT ? (
+              displayFloat(amount, DECIMALS_TO_DISPLAY)
+            ) : (
+              <Tooltip label={ethers.utils.formatUnits(amount, token.decimals)}>
+                {displayFloat(
                   ethers.utils.formatUnits(amount, token.decimals),
                   DECIMALS_TO_DISPLAY,
                 )}
+              </Tooltip>
+            )}
             &nbsp;
             <EthToken token={token} />
           </Text>
