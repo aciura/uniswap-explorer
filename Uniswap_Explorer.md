@@ -1,14 +1,32 @@
-# Take Home Assignment
+# Uniswap explorer
 
-## Uniswap explorer
+Full stack application, that displays historical data of a Uniswap contract.
+User has to login with metamask before querying the data.
 
-Design a full stack application, that displays historical data of a Uniswap contract, with features, like tx hash, link to block explorer for that hash, parsed values displaying the amounts of assets in human readable form. Let the users login with metamask before querying the data.
+## Backend
 
-- The data should be fetched by the backend without using Etherscan API
-- The backend should use ethers.js or web3.js to fetch all the events of a Uniswap swap contract (example link provided below)
-- The backend should interact with authenticated users only, that are connected via metamask
-- The frontend should fetch this historical data for display using the backend API only
-- Additionally: add a cache for the queries on the backend side
+Backend is implemented in `/api`
+
+### To start run: `yarn run start` in /api
+
+- Backend starts on [http://localhost:3001](http://localhost:3001)
+- Backend is implemented with TypeScript using [NestJs](https://nestjs.com/) with expressJs engine
+- The data is fetched by the backend using [ethers.js](https://docs.ethers.io/v5/single-page/)
+- https://docs.nestjs.com/techniques/caching add a cache for the queries on the backend side
+
+## Frontend
+
+Frontend is implemented in `/ui` using ReactJs
+
+### To start run `yarn run start` in /ui
+
+- Frontend start on [http://localhost:3000](http://localhost:3000)
+- The frontend displays historical data coming back from the backend API
+- Implemented in TypeScript
+- UI Components using [chakra-ui](https://chakra-ui.com/)
+- Data fetching is done using [swr](https://swr.vercel.app/)
+- Metamask login is using [wagmi](https://wagmi.sh/)
+- Project uses some utils from ethers.js
 
 ### Helpful links
 
