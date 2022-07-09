@@ -1,14 +1,16 @@
-import { Box } from '@chakra-ui/react'
+import { Box, useColorModeValue } from '@chakra-ui/react'
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons'
 
 export function TxStatus({ status }: { status: string }) {
+  const successColor = useColorModeValue('green.100', 'green.300')
+  const failureColor = useColorModeValue('red.100', 'red.300')
   return status === 'success' ? (
-    <Box bgColor="green.300" py={2} px={5} rounded="6">
+    <Box fontSize={'md'} bgColor={successColor} py={2} px={5} rounded="6">
       <CheckIcon />
-      &nbsp; Success
+      &nbsp;Success
     </Box>
   ) : (
-    <Box bgColor="red.300" py={2} px={5} rounded="6">
+    <Box fontSize={'md'} bgColor={failureColor} py={2} px={5} rounded="6">
       <CloseIcon />
       &nbsp;Failed
     </Box>
