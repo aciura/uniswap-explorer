@@ -10,23 +10,17 @@ import {
   Button,
   Spinner,
 } from '@chakra-ui/react'
-
 import { useEffect, useState } from 'react'
-import { BigNumber } from 'ethers'
-import { useBlockNumber } from 'wagmi'
 import { useInView } from 'react-intersection-observer'
 import { BlockInfo } from './BlockInfo'
 
-export const fetcher = (url: string) => fetch(url).then(res => res.json())
-export const blockLimit = 1
+export const BLOCKLIMIT = 1
 
-export const Transactions = () => {
-  // const {
-  //   data: blockNumber,
-  //   isError,
-  //   isLoading,
-  // } = useBlockNumber({ watch: true })
+export interface TransactionsProps {
+  blockNumber: number
+}
 
+export const Transactions = ({ blockNumber }: TransactionsProps) => {
   const [loadMoreRef, loadMoreInView] = useInView({ threshold: 0.25 })
 
   useEffect(() => {
@@ -35,13 +29,10 @@ export const Transactions = () => {
     }
   })
 
-  const blockNumber = 15095995
   const [blocks, setBlocks] = useState([blockNumber])
 
-  console.log('Transactions render', { blocks })
-
   const loadMoreTransactions = () => {
-    setBlocks([...blocks, blocks[blocks.length - 1] - blockLimit])
+    setBlocks([...blocks, blocks[blocks.length - 1] - BLOCKLIMIT])
   }
 
   return (

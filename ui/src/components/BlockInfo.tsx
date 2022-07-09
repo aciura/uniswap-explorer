@@ -6,14 +6,16 @@ import { TxStatus } from './Transaction/TxStatus'
 import { EthAddress } from './Transaction/EthAddress'
 import useSWR from 'swr'
 import { EthBlock } from './Transaction/EthBlock'
-import { blockLimit, fetcher } from './Transactions'
 import { displayFloat } from './utils'
 import { ContractFunction } from './Transaction/ContractFunction'
 import { TxPath } from './Transaction/TxPath'
+import { BLOCKLIMIT } from './Transactions'
+
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export function BlockInfo({ blockNumber }: { blockNumber: number }) {
   const { data, error } = useSWR(
-    `http://localhost:3001/uniswap/block/${blockNumber}?limit=${blockLimit}`,
+    `http://localhost:3001/uniswap/block/${blockNumber}?limit=${BLOCKLIMIT}`,
     fetcher,
     {
       revalidateIfStale: false,
@@ -22,7 +24,6 @@ export function BlockInfo({ blockNumber }: { blockNumber: number }) {
     },
   )
   const transactions = data as IUniswapTransaction[]
-  // console.log({ blockNumber, transactions })
 
   return (
     <>
