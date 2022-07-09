@@ -4,9 +4,9 @@ export function TxHash({ hash }: { hash: string }) {
   return (
     <Link href={`https://etherscan.io/tx/${hash}`} isExternal>
       <Text
-        fontSize="xs"
+        fontSize="md"
         maxWidth="10rem"
-        overflowX="hidden"
+        overflow="hidden"
         textOverflow={'ellipsis'}
       >
         {hash}
