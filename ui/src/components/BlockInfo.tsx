@@ -1,4 +1,4 @@
-import { Text, Tr, Td, Spinner, Skeleton } from '@chakra-ui/react'
+import { Text, Tr, Td, Spinner, Skeleton, ScaleFade } from '@chakra-ui/react'
 import { IToken, IUniswapTransaction } from '../dtos/IUniswapTransaction'
 import { ethers } from 'ethers'
 import { TxHash } from './Transaction/TxHash'
@@ -27,16 +27,8 @@ export function BlockInfo({ blockNumber }: { blockNumber: number }) {
 
   return (
     <>
-      {!transactions && <BlockIsLoading blockNumber={blockNumber} />}
-      {error && (
-        <Tr>
-          <Td fontSize={'sm'} isNumeric>
-            <EthBlock blockNumber={blockNumber} />
-          </Td>
-          <Td>
-            <Text colorScheme={'red'}>{error}</Text>
-          </Td>
-        </Tr>
+      {!transactions && (
+        <BlockIsLoadingOrError blockNumber={blockNumber} error={error} />
       )}
       {transactions && transactions.length === 0 && (
         <BlockWithNoTransactions blockNumber={blockNumber} />
@@ -98,20 +90,33 @@ export function BlockInfo({ blockNumber }: { blockNumber: number }) {
   }
 }
 
-function BlockIsLoading({ blockNumber }: { blockNumber: number }) {
+function BlockIsLoadingOrError({
+  blockNumber,
+  error,
+}: {
+  blockNumber: number
+  error: any
+}) {
+  if (error) {
+    console.error(error)
+  }
   return (
     <Tr>
       <Td fontSize={'sm'} isNumeric>
         <EthBlock blockNumber={blockNumber} />
       </Td>
       <Td>
-        <Spinner
-          thickness="8px"
-          speed="1s"
-          emptyColor="gray.200"
-          color="blue.800"
-          size="xl"
-        />
+        {error ? (
+          <Text color={'red'}>{error?.message}</Text>
+        ) : (
+          <Spinner
+            thickness="8px"
+            speed="1s"
+            emptyColor="gray.200"
+            color="blue.800"
+            size="xl"
+          />
+        )}
       </Td>
       <Td>
         <Skeleton />
