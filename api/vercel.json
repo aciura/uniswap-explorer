@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "ETHEREUM_NETWORK": "mainnet",
-    "INFURA_PROJECT_ID": ""
-  },
   "builds": [
     {
       "src": "src/main.ts",
