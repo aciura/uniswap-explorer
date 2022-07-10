@@ -8,7 +8,7 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common'
-import { ConfigService } from 'nestjs-dotenv'
+import { ConfigService } from '@nestjs/config'
 import { getTxReceipt, getTokens } from './service.resources'
 import { Cache } from 'cache-manager'
 
@@ -31,9 +31,13 @@ export class UniswapService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    this.logger.log(
+      `ETHEREUM_NETWORK = ${this.configService.get('ETHEREUM_NETWORK')}`,
+    )
+
     this.provider = new ethers.providers.InfuraProvider(
-      this.configService.get('ETHEREUM_NETWORK'),
-      this.configService.get('INFURA_PROJECT_ID'),
+      this.configService.get<string>('ETHEREUM_NETWORK'),
+      this.configService.get<string>('INFURA_PROJECT_ID'),
     )
   }
 
