@@ -3,6 +3,8 @@
 Full stack application, that displays historical data of a Uniswap contract.
 User has to login with metamask before querying the data.
 
+The web app is deployed on https://uniswap-explorer-ui.vercel.app/
+
 ## Backend
 
 Backend is implemented in `/api`
@@ -13,6 +15,8 @@ Backend is implemented in `/api`
 - Backend is implemented with TypeScript using [NestJs](https://nestjs.com/) with expressJs engine
 - The data is fetched by the backend using [ethers.js](https://docs.ethers.io/v5/single-page/)
 - https://docs.nestjs.com/techniques/caching add a cache for the queries on the backend side
+
+Backend is deployed on https://uniswap-explorer-api.vercel.app/
 
 ## Frontend
 
