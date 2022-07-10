@@ -10,17 +10,18 @@ import { displayFloat } from './utils'
 import { ContractFunction } from './Transaction/ContractFunction'
 import { TxPath } from './Transaction/TxPath'
 import { BLOCKLIMIT } from './Transactions'
+import { REACT_APP_API_URL } from '../envConfig'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export function BlockInfo({ blockNumber }: { blockNumber: number }) {
   const { data, error } = useSWR(
-    `http://localhost:3001/uniswap/block/${blockNumber}?limit=${BLOCKLIMIT}`,
+    `${REACT_APP_API_URL}/uniswap/block/${blockNumber}?limit=${BLOCKLIMIT}`,
     fetcher,
     {
       revalidateIfStale: false,
       revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+      revalidateOnReconnect: true,
     },
   )
   const transactions = data as IUniswapTransaction[]
