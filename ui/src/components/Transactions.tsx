@@ -21,7 +21,13 @@ export interface TransactionsProps {
 }
 
 export const Transactions = ({ blockNumber }: TransactionsProps) => {
+  const [blocks, setBlocks] = useState([blockNumber])
+
   const [loadMoreRef, loadMoreInView] = useInView({ threshold: 0.25 })
+
+  const loadMoreTransactions = () => {
+    setBlocks([...blocks, blocks[blocks.length - 1] - BLOCKLIMIT])
+  }
 
   useEffect(() => {
     if (loadMoreInView) {
@@ -29,11 +35,11 @@ export const Transactions = ({ blockNumber }: TransactionsProps) => {
     }
   })
 
-  const [blocks, setBlocks] = useState([blockNumber])
-
-  const loadMoreTransactions = () => {
-    setBlocks([...blocks, blocks[blocks.length - 1] - BLOCKLIMIT])
-  }
+  useEffect(() => {
+    if (blocks[0] < blockNumber) {
+      setBlocks(_blocks => [blockNumber].concat(_blocks))
+    }
+  }, [blockNumber])
 
   return (
     <TableContainer>

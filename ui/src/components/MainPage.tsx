@@ -18,7 +18,12 @@ export function MainPage() {
     isError,
     isLoading,
     error,
-  } = useBlockNumber({ watch: false })
+  } = useBlockNumber({
+    watch: true,
+    onBlock: blockNumber => {
+      console.log('New Ethereum block:', blockNumber)
+    },
+  })
   const uniswapLogoColor = useColorModeValue('#000000', '#ffffff')
   return (
     <Flex height={'100vh'} alignItems="flex-start" justifyContent={'center'}>
