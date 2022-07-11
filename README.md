@@ -14,7 +14,7 @@ Backend is implemented in `/api`
 - Backend starts on [http://localhost:3001](http://localhost:3001)
 - Backend is implemented with TypeScript using [NestJs](https://nestjs.com/) with expressJs engine
 - The data is fetched by the backend using [ethers.js](https://docs.ethers.io/v5/single-page/)
-- https://docs.nestjs.com/techniques/caching add a cache for the queries on the backend side
+- Auto-caching of responses on Backend is used to cache GET responses [NestJs Auto-caching-responses](https://docs.nestjs.com/techniques/caching#auto-caching-responses)
 
 Backend is deployed on https://uniswap-explorer-api.vercel.app/
 
