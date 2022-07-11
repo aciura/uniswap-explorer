@@ -64,7 +64,7 @@ export function BlockInfo({ blockNumber }: { blockNumber: number }) {
             <Td>
               <ContractFunction transaction={tx} />
             </Td>
-            <Td>
+            <Td fontSize={'md'}>
               <TxPath transaction={tx} />
             </Td>
           </Tr>
