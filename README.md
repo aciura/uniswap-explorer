@@ -20,7 +20,7 @@ Backend is deployed on https://uniswap-explorer-api.vercel.app/
 
 ## Frontend
 
-Frontend is implemented in `/ui` using ReactJs
+Frontend is implemented in `/ui`
 
 ### To start run `yarn run start` in /ui
 
